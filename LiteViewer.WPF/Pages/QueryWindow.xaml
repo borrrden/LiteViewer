@@ -1,0 +1,76 @@
+﻿<Window x:Class="LiteViewer.WPF.QueryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LiteViewer.WPF"
+        mc:Ignorable="d"
+        Title="Query" Height="768" Width="1024">
+    <Window.CommandBindings>
+        <CommandBinding Command="Open" Executed="OnOpenClicked" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Control" Command="Open" />
+    </Window.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_Open" Click="OnOpenClicked" />
+                </MenuItem>
+                <MenuItem Header="Insert" x:Name="InsertMenu">
+                   
+                </MenuItem>
+            </Menu>
+        </DockPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel HorizontalAlignment="Stretch">
+                <TextBlock Text="Use 'Db' for database source" Margin="10" />
+                <TextBox Height="200" HorizontalAlignment="Stretch" Text="{Binding QueryText}" TextWrapping="Wrap" IsEnabled="{Binding Ready}"
+                         x:Name="QueryTextBox" AcceptsReturn="True" TextChanged="OnTextChanged" />
+            </StackPanel>
+            
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <Button Content="All Doc IDs" Margin="10,0" Command="{Binding EnterAllDocIDsCommand}" IsEnabled="{Binding Ready}" />
+                <Button Content="Run Query" Margin="10" Command="{Binding QueryCommand}" IsEnabled="{Binding Ready}" />
+                <Grid Margin="10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Limit  " />
+                    <TextBox Text="{Binding Limit, Mode=TwoWay}" Grid.Column="1" IsEnabled="{Binding Ready}" />
+                </Grid>
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Skip   " />
+                    <TextBox Text="{Binding Skip, Mode=TwoWay}" Grid.Column="1" IsEnabled="{Binding Ready}" />
+                </Grid>
+            </StackPanel>
+            
+        </Grid>
+        <ListView ItemsSource="{Binding QueryResults}" Grid.Row="2">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <TextBlock HorizontalAlignment="Center" Text="{Binding PaginationText}" Grid.Row="3" />
+        <Button Content="Previous" Grid.Row="3" HorizontalAlignment="Left" Margin="10" Width="75" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding Ready}" />
+        <Button Content="Next" Grid.Row="3" HorizontalAlignment="Right" Margin="10" Width="75" Command="{Binding NextPageCommand}" IsEnabled="{Binding Ready}" />
+    </Grid>
+</Window>
