@@ -111,7 +111,7 @@ namespace LiteViewerCore.Models
                         break;
                 }
 
-                _lastQuery.Parameters.Set("l", limit).Set("s", 0);
+                _lastQuery.Parameters.Set("l", limit).Set("s", skip);
                 using (var tmpResults = _lastQuery.Run()) {
                     Count = tmpResults.Count;
                 }
