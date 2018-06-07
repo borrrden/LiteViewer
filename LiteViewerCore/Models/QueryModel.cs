@@ -96,7 +96,7 @@ namespace LiteViewerCore.Models
             if (_clear) {
                 var globals = new Globals { Db = _db };
                 var options = ScriptOptions.Default
-                    .WithReferences(typeof(Query).GetTypeInfo().Assembly)
+                    .WithReferences(typeof(IQuery).GetTypeInfo().Assembly)
                     .AddImports("Couchbase.Lite")
                     .AddImports("Couchbase.Lite.Query");
                 
@@ -111,16 +111,15 @@ namespace LiteViewerCore.Models
                         break;
                 }
 
-                _lastQuery.Parameters.Set("l", limit).Set("s", skip);
-                using (var tmpResults = _lastQuery.Run()) {
-                    Count = tmpResults.Count;
-                }
+                _lastQuery.Parameters.SetValue("l", limit).SetValue("s", skip);
+                var tmpResults = _lastQuery.Execute();
+                    Count = tmpResults.Count();
 
                 _clear = false;
             }
 
-            _lastQuery.Parameters.Set("l", Math.Min(100U, limit - position)).Set("s", skip + position);
-            return _lastQuery.Run();
+            _lastQuery.Parameters.SetValue("l", Math.Min(100U, limit - position)).SetValue("s", skip + position);
+            return _lastQuery.Execute();
         }
 
         #endregion
