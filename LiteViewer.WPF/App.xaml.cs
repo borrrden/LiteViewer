@@ -19,6 +19,9 @@
 //  limitations under the License.
 // 
 
+using System;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 
 namespace LiteViewer.WPF
@@ -32,8 +35,10 @@ namespace LiteViewer.WPF
 
         static App()
         {
+            var location = new Uri(Assembly.GetEntryAssembly().GetName().CodeBase);
+            string filePath = new FileInfo(location.AbsolutePath).Directory.FullName;
             Couchbase.Lite.Support.NetDesktop.Activate();
-            Couchbase.Lite.Support.NetDesktop.EnableTextLogging();
+            Couchbase.Lite.Support.NetDesktop.EnableTextLogging(filePath);
         }
 
         #endregion

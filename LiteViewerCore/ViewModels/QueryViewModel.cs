@@ -172,11 +172,10 @@ namespace LiteViewerCore.ViewModels
         {
             var queryResults = new List<string>();
             try {
-                using (var results = await _model.Interpret(QueryText, _pageSkip, _skip, _limit)) {
-                    Count = _model.Count;
-                    foreach (var result in results) {
-                        queryResults.Add(JsonConvert.SerializeObject(result.ToList()));
-                    }
+                var results = await _model.Interpret(QueryText, _pageSkip, _skip, _limit);
+                Count = _model.Count;
+                foreach (var result in results) {
+                    queryResults.Add(JsonConvert.SerializeObject(result.ToList()));
                 }
             } catch (Exception e) {
                 Debug.WriteLine($"Exception interpreting query: {e}");
