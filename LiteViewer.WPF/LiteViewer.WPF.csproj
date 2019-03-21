@@ -93,10 +93,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Couchbase.Lite">
-      <Version>2.0.0-db019</Version>
+      <Version>2.5.0-db003</Version>
     </PackageReference>
     <PackageReference Include="Couchbase.Lite.Support.NetDesktop">
-      <Version>2.0.0-db019</Version>
+      <Version>2.5.0-db003</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting">
       <Version>2.4.0</Version>
