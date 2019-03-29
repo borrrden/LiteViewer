@@ -62,7 +62,22 @@ namespace LiteViewer.WPF
                 start = QueryTextBox.SelectionStart;
             }
 
-            var range = ((QueryViewModel) DataContext).InsertQueryText(start, length, code);
+            var methodInfo = Type.GetType($"Couchbase.Lite.Query.{parent.Header}, Couchbase.Lite").GetMethod(mi.Header.ToString());
+            var isProperty = false;
+            var arguments = Enumerable.Empty<QueryArgument>();
+            if (methodInfo == null) {
+                if (Type.GetType($"Couchbase.Lite.Query.{parent.Header}, Couchbase.Lite")
+                        .GetProperty(mi.Header.ToString()) == null) {
+                    throw new ApplicationException("Unknown item, weird...");
+                }
+
+                isProperty = true;
+            } else {
+                arguments = methodInfo.GetParameters()
+                    .Select(x => new QueryArgument(x.ParameterType == typeof(string), x.Name));
+            }
+
+            var range = ((QueryViewModel) DataContext).InsertQueryText(start, length, code, isProperty, arguments);
             QueryTextBox.SelectionStart = range.start;
             QueryTextBox.SelectionLength = range.length;
         }
@@ -81,8 +96,8 @@ namespace LiteViewer.WPF
 
                 ((QueryViewModel) DataContext).Error += ShowError;
                 QueryTextBox.Focus();
-                ((QueryViewModel) DataContext).QueryText = "Query.Select()";
-                QueryTextBox.SelectionStart = 13;
+                ((QueryViewModel) DataContext).QueryText = "QueryBuilder.Select()";
+                QueryTextBox.SelectionStart = ((QueryViewModel) DataContext).QueryText.IndexOf('(') + 1;
                 if (InsertMenu.Items.Count == 0) {
                     PopulateInsertMenu();
                 }

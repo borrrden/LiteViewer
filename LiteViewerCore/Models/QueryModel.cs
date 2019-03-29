@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -56,15 +57,24 @@ namespace LiteViewerCore.Models
             var retVal = new Dictionary<string, IReadOnlyList<string>>();
 
             foreach (var t in new[]
-                { typeof(SelectResult), typeof(Expression), typeof(Function), typeof(Ordering), typeof(Join), typeof(DataSource) }) {
-                retVal[t.Name] = t.GetMethods(BindingFlags.Public | BindingFlags.Static).Select(x => x.Name)
-                    .ToImmutableArray();
+            {
+                typeof(SelectResult), typeof(Expression), typeof(Function), typeof(Ordering), typeof(Join), typeof(DataSource),
+                typeof(ArrayExpression), typeof(ArrayFunction), typeof(Collation), typeof(FullTextExpression), typeof(FullTextFunction),
+                typeof(Meta)
+            }) {
+                retVal[t.Name] = t.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Select(x => x.IsSpecialName ? x.Name.TrimStart('g', 'e', 't', '_') : x.Name)
+                .ToImmutableArray();
             }
 
             foreach (var t in new[]
             {
                 typeof(IExpression), typeof(IFromRouter), typeof(IWhereRouter), typeof(IJoinRouter), typeof(IOrderByRouter),
-                typeof(IGroupByRouter), typeof(ISortOrder)
+                typeof(IGroupByRouter), typeof(ISortOrder), typeof(IArrayExpressionIn), typeof(IArrayExpressionSatisfies),
+                typeof(IASCIICollation), typeof(IUnicodeCollation), typeof(IDataSourceAs), typeof(IFullTextExpression),
+                typeof(IHavingRouter), typeof(IJoinOn), typeof(IMetaExpression), typeof(IPropertyExpression), 
+                typeof(ISelectResultAs), typeof(ISelectResultFrom)
+
             }) {
                 retVal[t.Name] = t.GetMethods(BindingFlags.Public | BindingFlags.Instance).Select(x => x.Name)
                     .ToImmutableArray();

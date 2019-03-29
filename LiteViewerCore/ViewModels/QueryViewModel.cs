@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Input;
 
 using Couchbase.Lite;
@@ -35,19 +36,22 @@ using Newtonsoft.Json;
 
 namespace LiteViewerCore.ViewModels
 {
+    public sealed class QueryArgument
+    {
+        public bool IsQuoted { get; }
+
+        public string Name { get; }
+
+        public QueryArgument(bool isQuoted, string name)
+        {
+            IsQuoted = isQuoted;
+            Name = name;
+        }
+    }
+
     public sealed class QueryViewModel : NotifyPropertyChanged
     {
         #region Variables
-
-        private static readonly IReadOnlyCollection<string> QuotedItems = new HashSet<string>
-        {
-            "Expression.Property", "Expression.Parameter", "Ordering.Property"
-        };
-
-        private static readonly IReadOnlyCollection<string> NoArgItems = new HashSet<string>
-        {
-            "Expression.Meta", "SelectResult.All", ".Ascending", ".Descending"
-        };
 
         private readonly QueryModel _model;
         private int _count;
@@ -75,7 +79,7 @@ namespace LiteViewerCore.ViewModels
             }
         }
 
-        public ICommand EnterAllDocIDsCommand => new Command(() => QueryText = "Query.Select(SelectResult.Expression(Expression.Meta().ID)).From(DataSource.Database(Db));");
+        public ICommand EnterAllDocIDsCommand => new Command(() => QueryText = "QueryBuilder.Select(SelectResult.Expression(Meta.ID)).From(DataSource.Database(Db));");
 
         public string Limit
         {
@@ -143,26 +147,49 @@ namespace LiteViewerCore.ViewModels
 
         #endregion
 
-        public (int start, int length) InsertQueryText(int start, int length, string text)
+        public (int start, int length) InsertQueryText(int start, int length, string text, bool isProperty, IEnumerable<QueryArgument> arguments)
         {
             var queryText = QueryText ?? String.Empty;
             if (text.StartsWith("I")) {
                 text = $".{text.Split('.')[1]}";
             }
             (int, int) retVal;
-            string insertion;
-            if (NoArgItems.Contains(text)) {
-                insertion = $"{text}()";
-                retVal = (start + text.Length + 2, 0);
-            } else if (QuotedItems.Contains(text)) {
-                insertion = $"{text}(\"x\")";
-                retVal = (start + text.Length + 2, 1);
-            } else {  
-                insertion = $"{text}(x)";
-                retVal = (start + text.Length + 1, 1);
+            StringBuilder insertion = new StringBuilder(text);
+            bool first = true;
+            if (!isProperty) {
+                insertion.Append("(");
+
+                int count = 1;
+                foreach (var arg in arguments) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        insertion.Append(", ");
+                    }
+
+                    if (arg.IsQuoted) {
+                        insertion.AppendFormat($"\"{arg.Name}\"");
+                    } else {
+                        insertion.Append(arg.Name);
+                    }
+                }
+
+                insertion.Append(")");
             }
 
-            QueryText = queryText.Remove(start, length).Insert(start, insertion);
+            if (first) {
+                var offset = isProperty ? 0 : 2;
+                retVal = (start + text.Length + offset, 0);
+            } else {
+                var firstArgument = arguments.First();
+                var offset = firstArgument.IsQuoted ? 2 : 1;
+                retVal = (start + text.Length + offset, firstArgument.Name.Length);
+                if (insertion[1] == '"') {
+                    retVal.Item1 += 1;
+                }
+            }
+
+            QueryText = queryText.Remove(start, length).Insert(start, insertion.ToString());
             return retVal;
         }
 
